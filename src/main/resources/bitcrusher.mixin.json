@@ -1,0 +1,16 @@
+{
+  "required": true,
+  "package": "com.example.bitcrusher.mixin",
+  "compatibilityLevel": "JAVA_25",
+  "target": "@env(DEFAULT)",
+  "minVersion": "0.8.7",
+  "setSourceFile": true,
+  "injectors": {
+    "defaultRequire": 1
+  },
+  "mixins": [],
+  "client": [
+    "SoundManagerMixin"
+  ],
+  "server": []
+}
