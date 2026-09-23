@@ -27,7 +27,7 @@ public class BitCrusherConfig {
         public int bits = 4;
 
         @Config.Comment({
-                "Each sample is held for this many frames, dividing the effective sample rate. 1 leaves the rate alone.",
+                "Divides the effective sample rate, which becomes 44100 / this Hz for every sound, whatever rate its file uses. 1 leaves the rate alone.",
                 "Changing this restarts the sound engine."
         })
         @Config.RangeInt(min = 1, max = 8)
