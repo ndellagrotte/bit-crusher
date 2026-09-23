@@ -45,6 +45,12 @@ public class BitCrusherConfig {
     public static class Whitelist {
 
         @Config.Comment({
+                "Whether bit-crushing also applies to sound files from resource packs, including a server's or world's pack. While false, they play clean.",
+                "This goes by file, so a pack that only edits sounds.json to point events at vanilla or mod sounds doesn't count."
+        })
+        public boolean applyToSoundPacks = false;
+
+        @Config.Comment({
                 "Sound event IDs that play clean, one per line, e.g. minecraft:ui.button.click.",
                 "A missing namespace means minecraft:, and * matches anything, e.g. minecraft:music.* or *:ui.*"
         })

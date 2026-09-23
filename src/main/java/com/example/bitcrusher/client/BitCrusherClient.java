@@ -83,6 +83,9 @@ public final class BitCrusherClient {
             if (whitelist.matches(event.getNamespace(), event.getPath())) {
                 return identifier;
             }
+            if (!BitCrusherConfig.whitelist.applyToSoundPacks && SoundPacks.provides(sound.getSound().getSoundAsOggLocation())) {
+                return identifier;
+            }
             return identifier + '.' + CODEC_EXTENSION;
         } catch (RuntimeException e) {
             if (!routeFailureLogged) {

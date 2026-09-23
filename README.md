@@ -1,6 +1,6 @@
 # Bit Crusher
 
-A client-side Cleanroom (Minecraft 1.12.2) mod that bit-crushes every sound the game plays. You can whitelist single sounds, or every sound from a mod, so they play clean.
+A client-side Cleanroom (Minecraft 1.12.2) mod that bit-crushes the game's sounds. Sounds that come from a resource pack play clean unless you turn that off, and you can whitelist single sounds, or every sound from a mod, so they play clean too.
 
 It's a port of the Fabric 1.21.1 mod "Bit cruncher" by ghouldubs, and it applies the same effect.
 
@@ -22,6 +22,7 @@ Changing an effect setting restarts the sound engine, the same way F3+T does. So
 
 Whitelisted sounds play clean. Changes apply from the next sound played, with no restart.
 
+- **`applyToSoundPacks`** (default `false`): whether sounds from resource packs get crushed too. While it's off, any sound whose file comes from an enabled resource pack, or a server's or world's pack, plays clean. It goes by file, so a pack that only edits `sounds.json` to point events at vanilla or mod sounds doesn't count.
 - **`sounds`**: sound event IDs, one per line. These are the same IDs `/playsound` takes, e.g. `minecraft:ui.button.click`.
   - A missing namespace means `minecraft:`.
   - `*` matches anything: `minecraft:music.*` covers all the music, and `*:ui.*` covers every mod's UI sounds.
@@ -32,6 +33,7 @@ Matching ignores case. Invalid entries are skipped and logged.
 
 ```
 whitelist {
+    B:applyToSoundPacks=false
     S:mods <
         somemod
      >
