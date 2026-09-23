@@ -1,0 +1,7 @@
+bitcrusher.effect=Effect
+bitcrusher.effect.bits=Bit Depth
+bitcrusher.effect.sampleratedivisor=Sample Rate Divisor
+bitcrusher.effect.gain=Gain
+bitcrusher.whitelist=Whitelist
+bitcrusher.whitelist.sounds=Sounds
+bitcrusher.whitelist.mods=Mods

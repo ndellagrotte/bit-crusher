@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "cleanroom": {
+      "type": "stdio",
+      "command": "node",
+      "args": [
+        "/home/nick/IdeaProjects/mcmodding-mcp/dist/index.js"
+      ],
+      "env": {
+        "CLEANROOM_MCP_DATA_DIR": "/home/nick/IdeaProjects/mcmodding-mcp/data",
+        "CLEANROOM_MCP_SKIP_AUTO_UPDATE": "1"
+      }
+    }
+  }
+}
