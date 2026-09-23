@@ -23,7 +23,7 @@ public final class BitcrushEffect {
      */
     public record Settings(int bits, int sampleRateDivisor, float gain) {
 
-        public static final Settings DEFAULT = new Settings(4, 3, 0.5F);
+        public static final Settings DEFAULT = new Settings(8, 4, 0.5F);
 
         public Settings {
             bits = Math.clamp(bits, 1, 16);
