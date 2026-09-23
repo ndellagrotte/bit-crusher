@@ -8,10 +8,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import com.example.bitcrusher.core.BitcrushEffect.Settings;
 import java.nio.ByteBuffer;
 import java.nio.ByteOrder;
+import java.nio.ShortBuffer;
 import java.util.Arrays;
 import java.util.Random;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioFormat.Encoding;
+import javax.sound.sampled.AudioSystem;
 import org.junit.jupiter.api.Test;
 
 class BitcrushEffectTest {
@@ -36,16 +38,51 @@ class BitcrushEffectTest {
     @Test
     void stereoCrushesEachChannelLikeMono() {
         byte[] input = randomPcm(4096);
+        for (float rate : new float[] {44100F, 192000F}) {
+            for (int divisor = 1; divisor <= 8; divisor++) {
+                Settings settings = new Settings(5, divisor, 1.5F);
+                byte[] stereo = input.clone();
+                byte[] left = channel(stereo, 0);
+                byte[] right = channel(stereo, 1);
+                BitcrushEffect.process(stereo, pcm16(rate, 2, false), settings);
+                BitcrushEffect.process(left, pcm16(rate, 1, false), settings);
+                BitcrushEffect.process(right, pcm16(rate, 1, false), settings);
+                assertArrayEquals(left, channel(stereo, 0), "rate=" + rate + " divisor=" + divisor);
+                assertArrayEquals(right, channel(stereo, 1), "rate=" + rate + " divisor=" + divisor);
+            }
+        }
+    }
+
+    @Test
+    void holdsEveryRateToTheSameEffectiveRate() {
+        // 30 ms at 44100 / 3 Hz is 441 held samples, whatever rate the sound was recorded at
+        for (int rate : new int[] {44100, 48000, 32000, 96000, 192000}) {
+            byte[] data = ramp(rate * 3 / 100);
+            BitcrushEffect.process(data, pcm16(rate, 1, false), new Settings(16, 3, 1F));
+            assertEquals(441, runs(data), "rate=" + rate);
+        }
+    }
+
+    @Test
+    void divisorOneLeavesAnyRateAlone() {
+        for (float rate : new float[] {8000F, 32000F, 44100F, 48000F, 192000F}) {
+            byte[] input = randomPcm(4096);
+            byte[] data = input.clone();
+            BitcrushEffect.process(data, pcm16(rate, 2, false), new Settings(16, 1, 1F));
+            assertArrayEquals(input, data, "rate=" + rate);
+        }
+    }
+
+    @Test
+    void unspecifiedSampleRateActsLike44100() {
+        byte[] input = randomPcm(4096);
         for (int divisor = 1; divisor <= 8; divisor++) {
-            Settings settings = new Settings(5, divisor, 1.5F);
-            byte[] stereo = input.clone();
-            byte[] left = channel(stereo, 0);
-            byte[] right = channel(stereo, 1);
-            BitcrushEffect.process(stereo, pcm16(2, false), settings);
-            BitcrushEffect.process(left, pcm16(1, false), settings);
-            BitcrushEffect.process(right, pcm16(1, false), settings);
-            assertArrayEquals(left, channel(stereo, 0), "divisor=" + divisor);
-            assertArrayEquals(right, channel(stereo, 1), "divisor=" + divisor);
+            Settings settings = new Settings(6, divisor, 1F);
+            byte[] expected = input.clone();
+            byte[] actual = input.clone();
+            BitcrushEffect.process(expected, pcm16(1, false), settings);
+            BitcrushEffect.process(actual, pcm16(AudioSystem.NOT_SPECIFIED, 1, false), settings);
+            assertArrayEquals(expected, actual, "divisor=" + divisor);
         }
     }
 
@@ -123,7 +160,32 @@ class BitcrushEffectTest {
     }
 
     private static AudioFormat pcm16(int channels, boolean bigEndian) {
-        return new AudioFormat(44100F, 16, channels, true, bigEndian);
+        return pcm16(44100F, channels, bigEndian);
+    }
+
+    private static AudioFormat pcm16(float rate, int channels, boolean bigEndian) {
+        return new AudioFormat(rate, 16, channels, true, bigEndian);
+    }
+
+    /** Mono 16-bit little-endian samples 0, 1, 2, ..., so every frame holds a different value. */
+    private static byte[] ramp(int frames) {
+        ByteBuffer buffer = ByteBuffer.allocate(frames * 2).order(ByteOrder.LITTLE_ENDIAN);
+        for (int frame = 0; frame < frames; frame++) {
+            buffer.putShort((short) frame);
+        }
+        return buffer.array();
+    }
+
+    /** How many runs of repeated samples mono 16-bit little-endian data has. */
+    private static int runs(byte[] data) {
+        ShortBuffer samples = ByteBuffer.wrap(data).order(ByteOrder.LITTLE_ENDIAN).asShortBuffer();
+        int runs = 0;
+        for (int i = 0; i < samples.limit(); i++) {
+            if (i == 0 || samples.get(i) != samples.get(i - 1)) {
+                runs++;
+            }
+        }
+        return runs;
     }
 
     /** Random 16-bit little-endian samples, starting with the extremes so clipping is always exercised. */

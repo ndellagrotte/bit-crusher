@@ -12,8 +12,8 @@ Change them in game under **Mods → Bit Crusher → Config**, or in `config/bit
 
 | Setting | Default | Range | What it does |
 |---|---|---|---|
-| `bits` | 4 | 1–16 | Bit depth each sample is reduced to. Lower sounds crunchier. 16 leaves the depth alone. |
-| `sampleRateDivisor` | 3 | 1–8 | Holds each sample for this many frames, which divides the effective sample rate. 1 leaves the rate alone. |
+| `bits` | 8 | 1–16 | Bit depth each sample is reduced to. Lower sounds crunchier. 16 leaves the depth alone. |
+| `sampleRateDivisor` | 4 | 1–8 | Divides the effective sample rate by holding samples. Every sound ends up at 44100 / this Hz, whatever rate its file uses, so a mod's 192 kHz sounds get crushed as much as vanilla's. 1 leaves the rate alone. |
 | `gain` | 0.5 | 0–10 | Volume multiplier applied before crushing. Anything pushed past full scale clips. |
 
 Changing an effect setting restarts the sound engine, the same way F3+T does. Sounds that are playing stop, and the music comes back a little later. Setting `bits = 16`, `sampleRateDivisor = 1` and `gain = 1.0` makes everything sound like vanilla.

@@ -24,15 +24,15 @@ public class BitCrusherConfig {
         })
         @Config.RangeInt(min = 1, max = 16)
         @Config.SlidingOption
-        public int bits = 4;
+        public int bits = 8;
 
         @Config.Comment({
-                "Each sample is held for this many frames, dividing the effective sample rate. 1 leaves the rate alone.",
+                "Divides the effective sample rate, which becomes 44100 / this Hz for every sound, whatever rate its file uses. 1 leaves the rate alone.",
                 "Changing this restarts the sound engine."
         })
         @Config.RangeInt(min = 1, max = 8)
         @Config.SlidingOption
-        public int sampleRateDivisor = 3;
+        public int sampleRateDivisor = 4;
 
         @Config.Comment({
                 "Volume multiplier applied before crushing. Anything pushed past full scale clips.",

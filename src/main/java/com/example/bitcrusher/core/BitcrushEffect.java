@@ -8,6 +8,12 @@ import javax.sound.sampled.AudioFormat;
  */
 public final class BitcrushEffect {
 
+    /**
+     * The rate {@code sampleRateDivisor} divides. Holding to a fixed rate, not a fraction of each
+     * file's own, crushes a 192 kHz file as much as a 44.1 kHz one.
+     */
+    static final int REFERENCE_RATE = 44100;
+
     private BitcrushEffect() {}
 
     /**
@@ -17,7 +23,7 @@ public final class BitcrushEffect {
      */
     public record Settings(int bits, int sampleRateDivisor, float gain) {
 
-        public static final Settings DEFAULT = new Settings(4, 3, 0.5F);
+        public static final Settings DEFAULT = new Settings(8, 4, 0.5F);
 
         public Settings {
             bits = Math.clamp(bits, 1, 16);
@@ -31,8 +37,10 @@ public final class BitcrushEffect {
     /**
      * Crushes 16-bit signed PCM in place. Every channel of a frame is multiplied by the gain, clipped
      * to 16 bits and has its low {@code 16 - bits} bits cleared, and the result is held for
-     * {@code sampleRateDivisor} frames. For mono this matches the original sample for sample; holding
-     * whole frames keeps stereo channels from bleeding into each other.
+     * {@code sampleRateDivisor} frames at 44.1 kHz, however many frames that is at the sound's own
+     * rate. A divisor of 1 holds nothing, whatever the rate. For 44.1 kHz mono this matches the
+     * original sample for sample; holding whole frames keeps stereo channels from bleeding into each
+     * other.
      *
      * <p>Other formats, and any trailing partial frame, are left untouched.
      */
@@ -49,8 +57,20 @@ public final class BitcrushEffect {
         float gain = settings.gain();
         short[] held = new short[channels];
 
+        // A new sample is taken whenever the frame reaches the next slot of the reduced rate. At 44.1 kHz
+        // the slot is frame / divisor.
+        int sourceRate = Math.round(format.getSampleRate());
+        if (sourceRate <= 0) {
+            // Unspecified (-1) or NaN
+            sourceRate = REFERENCE_RATE;
+        }
+        long period = divisor == 1 ? REFERENCE_RATE : (long) sourceRate * divisor;
+        long lastSlot = -1;
+
         for (int frame = 0; frame < frames; frame++) {
-            boolean sample = frame % divisor == 0;
+            long slot = frame * (long) REFERENCE_RATE / period;
+            boolean sample = slot != lastSlot;
+            lastSlot = slot;
             int offset = frame * frameSize;
             for (int channel = 0; channel < channels; channel++, offset += 2) {
                 if (sample) {
